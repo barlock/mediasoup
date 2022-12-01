@@ -11,7 +11,7 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "https://github.com/versatica/mediasoup.git"
+    "url": "https://github.com/barlock/mediasoup.git"
   },
   "funding": {
     "type": "opencollective",
@@ -61,7 +61,8 @@
     "test:worker": "node npm-scripts.js test:worker",
     "coverage": "npm run worker:build && node npm-scripts.js coverage",
     "postinstall": "node npm-scripts.js postinstall",
-    "release": "node npm-scripts.js release"
+    "release": "node npm-scripts.js release",
+    "worker:release": "npx prebuild --upload-all $GH_TOKEN"
   },
   "jest": {
     "verbose": true,
@@ -70,6 +71,7 @@
   },
   "dependencies": {
     "@types/node": "^16.11.10",
+    "binary-install": "^1.0.6",
     "debug": "^4.3.4",
     "h264-profile-level-id": "^1.0.1",
     "supports-color": "^9.2.3",
@@ -87,6 +89,7 @@
     "open-cli": "^7.1.0",
     "pick-port": "^1.0.1",
     "sctp": "^1.0.0",
+    "tar": "^6.1.12",
     "tsc-watch": "^5.0.3",
     "typescript": "^4.8.4"
   }

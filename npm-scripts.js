@@ -2,7 +2,8 @@ const process = require('process');
 const os = require('os');
 const fs = require('fs');
 const { execSync } = require('child_process');
-const { version } = require('./package.json');
+const tar = require('tar')
+const { version, repository } = require('./package.json');
 
 const isFreeBSD = os.platform() === 'freebsd';
 const isWindows = os.platform() === 'win32';
@@ -13,6 +14,24 @@ const MAYOR_VERSION = version.split('.')[0];
 
 // make command to use.
 const MAKE = process.env.MAKE || (isFreeBSD ? 'gmake' : 'make');
+
+// prebuilt platforms
+const PREBUILT_PLATFORMS = {
+	win32: {
+		arch: ['x86'],
+		binary: 'mediasoup-worker.exe'
+	},
+	darwin: {
+		arch: ['x86', 'arm'],
+		binary: 'mediasoup-worker'
+	},
+	linux: {
+		arch: ['x86'],
+		binary: 'mediasoup-worker'
+	}
+};
+const PREBUILD_DIR = 'out';
+const PREBUILD_TAR_PATH=`${PREBUILD_DIR}/mediasoup-worker-${version}-${os.platform()}-${os.arch()}.tgz`
 
 // eslint-disable-next-line no-console
 console.log(`npm-scripts.js [INFO] running task "${task}"`);
@@ -132,6 +151,19 @@ switch (task)
 		break;
 	}
 
+	case 'prebuild:package':
+	{
+		ensureDir(PREBUILD_DIR);
+		createTar(['worker/out'], PREBUILD_TAR_PATH);
+		break;
+	}
+
+	case 'prebuild:unpackage':
+	{
+		extractTar(PREBUILD_TAR_PATH, 'worker')
+		break;
+	}
+
 	case 'release':
 	{
 		execute('node npm-scripts.js typescript:build');
@@ -190,3 +222,30 @@ function execute(command)
 		process.exit(1);
 	}
 }
+
+function ensureDir(dir) {
+	if (!fs.existsSync(dir)){
+		fs.mkdirSync(dir, { recursive: true });
+	}
+}
+
+function createTar(files, dest) {
+	tar
+		.create(
+			{
+				gzip: true,
+			},
+			files
+		)
+		.pipe(fs.createWriteStream(dest));
+}
+
+function extractTar(source, cwd) {
+	fs.createReadStream(source).pipe(
+		tar.extract({
+			strip: 1,
+			cwd,
+		})
+	);
+}
+
